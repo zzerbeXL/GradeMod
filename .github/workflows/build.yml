@@ -1,0 +1,29 @@
+name: build
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: unpack project
+        run: |
+          mkdir work
+          unzip -q grade-mod.zip -d work
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'microsoft'
+      # The zip has no gradle-wrapper.jar (no network where it was made), so Gradle is installed here.
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: build
+        working-directory: work
+        run: gradle build --no-daemon
+      - uses: actions/upload-artifact@v7
+        with:
+          name: grade-jar
+          path: work/build/libs/grade-1.0.0.jar
